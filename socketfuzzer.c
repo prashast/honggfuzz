@@ -106,6 +106,20 @@ bool fuzz_notifySocketFuzzerNewCov(honggfuzz_t* hfuzz) {
     return true;
 }
 
+bool fuzz_notifySocketFuzzerOldCov(honggfuzz_t* hfuzz) {
+    ssize_t ret;
+
+    // Tell the fuzzer that the thing he sent reached new BB's
+    ret = send(hfuzz->socketFuzzer.clientSocket, "Old!", 4, 0);
+    LOG_D("fuzz_notifySocketFuzzer: SEND: Old!");
+    if (ret < 0) {
+        LOG_F("fuzz_notifySocketFuzzer: sent: %zu", ret);
+        return false;
+    }
+
+    return true;
+}
+
 bool fuzz_notifySocketFuzzerCrash(run_t* run) {
     ssize_t ret;
 

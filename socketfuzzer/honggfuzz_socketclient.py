@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 # Python3
 
 import socket
@@ -115,7 +115,7 @@ class TargetSocket:
 
 def sendResp(targetSocketRes, hfSocket):
     if not targetSocketRes:
-        print "  ! Server down. Send: bad!"
+        print (" ! Server down. Send: bad!")
         hfSocket.send("bad!")
     else:
         hfSocket.send("okay")
@@ -123,7 +123,6 @@ def sendResp(targetSocketRes, hfSocket):
 
 
 def auto(pid):
-    print "Auto"
 
     hfSocket = HonggfuzzSocket(pid)
     targetSocket = TargetSocket()

@@ -235,6 +235,12 @@ static void fuzz_perfFeedback(run_t* run) {
             fuzz_notifySocketFuzzerNewCov(run->global);
         }
     }
+    else {
+            if(run->global->socketFuzzer.enabled) {
+                LOG_D("SocketFuzzer: fuzz: old BB (perf)");
+                fuzz_notifySocketFuzzerOldCov(run->global);
+        }
+    }
 }
 
 /* Return value indicates whether report file should be updated with the current verified crash */
