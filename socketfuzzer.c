@@ -94,9 +94,14 @@ int fuzz_waitforSocketFuzzer(run_t* run) {
 
 bool fuzz_notifySocketFuzzerNewCov(honggfuzz_t* hfuzz) {
     ssize_t ret;
-
+    uint64_t send_buf[sizeof(uint64_t)*3];
     // Tell the fuzzer that the thing he sent reached new BB's
-    ret = send(hfuzz->socketFuzzer.clientSocket, "New!", 4, 0);
+    send_buf[0] = hfuzz->linux.hwCnts.softCntPc;
+    send_buf[1] = hfuzz->linux.hwCnts.softCntEdge;
+    send_buf[2] = hfuzz->linux.hwCnts.softCntCmp;
+
+    //ret = send(hfuzz->socketFuzzer.clientSocket, "New!", 4, 0);
+    ret = send(hfuzz->socketFuzzer.clientSocket, (void *)send_buf, sizeof(uint64_t)*3, 0);
     LOG_D("fuzz_notifySocketFuzzer: SEND: New!");
     if (ret < 0) {
         LOG_F("fuzz_notifySocketFuzzer: sent: %zu", ret);
