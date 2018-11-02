@@ -63,7 +63,7 @@ class TargetSocket:
         s.settimeout(1)
 
         host = 'localhost'
-        port = 5001
+        port = 25 
 
         isOpen = False
 
