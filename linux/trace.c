@@ -1215,6 +1215,7 @@ void arch_traceAnalyze(run_t* run, int status, pid_t pid) {
      * Process exited
      */
     if (WIFEXITED(status)) {
+	LOG_D("Exit occurred");
         /*
          * Target exited with sanitizer defined exitcode (used when SIGABRT is not monitored)
          */
@@ -1316,7 +1317,8 @@ bool arch_traceAttach(run_t* run, pid_t pid) {
 #if !defined(PTRACE_O_EXITKILL)
 #define PTRACE_O_EXITKILL (1 << 20)
 #endif /* !defined(PTRACE_O_EXITKILL) */
-    long seize_options = PTRACE_O_TRACECLONE | PTRACE_O_TRACEFORK | PTRACE_O_TRACEVFORK;
+    //long seize_options = PTRACE_O_TRACECLONE | PTRACE_O_TRACEFORK | PTRACE_O_TRACEVFORK;
+    long seize_options = PTRACE_O_TRACECLONE ;
     if (run->global->linux.pid == 0) {
         seize_options |= PTRACE_O_EXITKILL;
     }

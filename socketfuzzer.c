@@ -54,12 +54,17 @@ bool fuzz_prepareSocketFuzzer(run_t* run) {
 
     // Notify fuzzer that he should send teh things
     LOG_D("fuzz_prepareSocketFuzzer: SEND Fuzz");
-    ret = send(run->global->socketFuzzer.clientSocket, "Fuzz", 4, 0);
+    if (!run->hasChildExit) {
+    	ret = send(run->global->socketFuzzer.clientSocket, "Fuzz", 4, 0);
+    }
+    else {
+    	ret = send(run->global->socketFuzzer.clientSocket, "Down", 4, 0);
+        run->hasChildExit = false;
+    }
     if (ret < 0) {
         LOG_F("fuzz_prepareSocketFuzzer: received: %zu", ret);
         return false;
     }
-
     return true;
 }
 

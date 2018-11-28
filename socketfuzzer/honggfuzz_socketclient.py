@@ -130,7 +130,6 @@ def auto(pid):
     hfSocket.connect()
 
 
-    print ""
     print "Test: 0 - initial"
     ret = hfSocket.recv()
     if ret == "Fuzz":

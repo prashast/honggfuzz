@@ -310,6 +310,9 @@ static bool arch_checkWait(run_t* run) {
             return true;
         }
         if (ptracePid == childPid) {
+	    if (WSTOPSIG(status) == 17) {
+		run->hasChildExit = true;
+            }
             arch_traceAnalyze(run, status, pid);
             continue;
         }

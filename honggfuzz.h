@@ -351,6 +351,7 @@ typedef struct {
     } netbsd;
 
     bool hasCrashed;
+    bool hasChildExit;
 } run_t;
 
 /*
