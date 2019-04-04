@@ -94,10 +94,33 @@ int fuzz_waitforSocketFuzzer(run_t* run) {
 
 bool fuzz_notifySocketFuzzerNewCov(honggfuzz_t* hfuzz) {
     ssize_t ret;
+    ret_msg *ret_buf = (ret_msg *)malloc(sizeof(ret_msg));
+    strncpy(ret_buf->buf, "New!", 4);
+    ret_buf->stats[0] = hfuzz->linux.hwCnts.softCntPc;
+    ret_buf->stats[1] = hfuzz->linux.hwCnts.softCntEdge;
+    ret_buf->stats[2] = hfuzz->linux.hwCnts.softCntCmp;
+
+    ret = send(hfuzz->socketFuzzer.clientSocket, (void *)ret_buf, sizeof(ret_msg), 0);
+    LOG_D("fuzz_notifySocketFuzzer: SEND: New! Sent size:%zu Struct size:%zu", ret, sizeof(ret_msg));
+    if (ret < 0) {
+        LOG_F("fuzz_notifySocketFuzzer: sent: %zu", ret);
+        return false;
+    }
+
+    return true;
+}
+
+bool fuzz_notifySocketFuzzerOldCov(honggfuzz_t* hfuzz) {
+    ssize_t ret;
+    ret_msg *ret_buf = (ret_msg *)malloc(sizeof(ret_msg));
+    strncpy(ret_buf->buf, "Old!", 4);
+    ret_buf->stats[0] = hfuzz->linux.hwCnts.softCntPc;
+    ret_buf->stats[1] = hfuzz->linux.hwCnts.softCntEdge;
+    ret_buf->stats[2] = hfuzz->linux.hwCnts.softCntCmp;
 
     // Tell the fuzzer that the thing he sent reached new BB's
-    ret = send(hfuzz->socketFuzzer.clientSocket, "New!", 4, 0);
-    LOG_D("fuzz_notifySocketFuzzer: SEND: New!");
+    ret = send(hfuzz->socketFuzzer.clientSocket, (void *)ret_buf, sizeof(ret_msg), 0);
+    LOG_D("fuzz_notifySocketFuzzer: SEND: Old!");
     if (ret < 0) {
         LOG_F("fuzz_notifySocketFuzzer: sent: %zu", ret);
         return false;
