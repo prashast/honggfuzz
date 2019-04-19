@@ -350,7 +350,12 @@ bool cmdlineParse(int argc, char* argv[], honggfuzz_t* hfuzz) {
                 .serverSocket = -1,
                 .clientSocket = -1,
             },
-
+        .grammarFuzzer =
+            {
+                .enabled = false,
+                .serverSocket = -1,
+                .clientSocket = -1,
+            },
         /* Linux code */
         .linux =
             {
@@ -440,6 +445,7 @@ bool cmdlineParse(int argc, char* argv[], honggfuzz_t* hfuzz) {
         { { "exit_upon_crash", no_argument, NULL, 0x107 }, "Exit upon seeing the first crash (default: false)" },
         { { "socket_fuzzer", no_argument, NULL, 0x10B }, "Instrument external fuzzer via socket" },
         { { "netdriver", no_argument, NULL, 0x10C }, "Use netdriver (libhfnetdriver/). In most cases it will be autodetected through a binary signature" },
+        { { "grammar_fuzz", no_argument, NULL, 0x10D }, "Grammar aware fuzzing" },
         { { "only_printable", no_argument, NULL, 'o' }, "Only generate printable inputs" },
 
 #if defined(_HF_ARCH_LINUX)
@@ -548,6 +554,9 @@ bool cmdlineParse(int argc, char* argv[], honggfuzz_t* hfuzz) {
                 break;
             case 0x10C:
                 hfuzz->exe.netDriver = true;
+                break;
+            case 0x10D:
+                hfuzz->grammarFuzzer.enabled = true;
                 break;
             case 'o':
                 hfuzz->cfg.only_printable = true;

@@ -44,6 +44,7 @@
 #include "libhfcommon/log.h"
 #include "libhfcommon/util.h"
 #include "socketfuzzer.h"
+#include "grammarfuzzer.h"
 #include "subproc.h"
 
 static int sigReceived = 0;
@@ -251,7 +252,7 @@ int main(int argc, char** argv) {
         display_init();
     }
 
-    if (hfuzz.socketFuzzer.enabled) {
+    if (hfuzz.socketFuzzer.enabled || hfuzz.grammarFuzzer.enabled) {
         LOG_I("No input file corpus loaded, the external socket_fuzzer is responsible for "
               "creating the fuzz data");
         setupSocketFuzzer(&hfuzz);
@@ -347,8 +348,11 @@ int main(int argc, char** argv) {
         free(hfuzz.netbsd.symsWl);
     }
 #endif
-    if (hfuzz.socketFuzzer.enabled) {
+    if (hfuzz.socketFuzzer.enabled ) {
         cleanupSocketFuzzer();
+    }
+    if (hfuzz.grammarFuzzer.enabled) {
+        cleanupGrammarFuzzer();
     }
 
     printSummary(&hfuzz);

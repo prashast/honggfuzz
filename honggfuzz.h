@@ -274,6 +274,12 @@ typedef struct {
         int serverSocket;
         int clientSocket;
     } socketFuzzer;
+    struct {
+        bool enabled;
+        int serverSocket;
+        int clientSocket;
+    } grammarFuzzer;
+    
     /* For the Linux code */
     struct {
         int exeFd;

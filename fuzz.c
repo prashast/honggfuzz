@@ -54,6 +54,7 @@
 #include "report.h"
 #include "sanitizers.h"
 #include "socketfuzzer.h"
+#include "grammarfuzzer.h"
 #include "subproc.h"
 
 static time_t termTimeStamp = 0;
@@ -121,7 +122,7 @@ static void fuzz_addFileToFileQ(honggfuzz_t* hfuzz, const uint8_t* data, size_t 
     TAILQ_INSERT_TAIL(&hfuzz->io.dynfileq, dynfile, pointers);
     hfuzz->io.dynfileqCnt++;
 
-    if (hfuzz->socketFuzzer.enabled) {
+    if (hfuzz->socketFuzzer.enabled || hfuzz->grammarFuzzer.enabled) {
         /* Don't add coverage data to files in socketFuzzer mode */
         return;
     }
@@ -237,7 +238,19 @@ static void fuzz_perfFeedback(run_t* run) {
             LOG_D("SocketFuzzer: fuzz: new BB (perf)");
             fuzz_notifySocketFuzzerNewCov(run->global);
         }
+        if (run->global->grammarFuzzer.enabled) {
+            LOG_D("GrammarFuzzer: fuzz: new BB (perf)");
+            fuzz_notifyGrammarFuzzerCov(run->global, "New!");
+        }
     }
+
+    else {
+        if (run->global->grammarFuzzer.enabled) {
+            LOG_D("GrammarFuzzer: fuzz: Old BB (perf)");
+            fuzz_notifyGrammarFuzzerCov(run->global, "Old!");
+        }
+    }
+
 }
 
 /* Return value indicates whether report file should be updated with the current verified crash */
@@ -323,6 +336,11 @@ static bool fuzz_fetchInput(run_t* run) {
     }
 
     if (fuzz_getState(run->global) == _HF_STATE_DYNAMIC_MAIN) {
+        // Checking if grammar fuzzer mode enabled
+        if (run->global->grammarFuzzer.enabled) {
+                
+        }
+
         if (run->global->exe.externalCommand) {
             if (!input_prepareExternalFile(run)) {
                 LOG_E("input_prepareFileExternally() failed");
@@ -458,6 +476,42 @@ static void fuzz_fuzzLoopSocket(run_t* run) {
     report_Report(run);
 }
 
+static void fuzz_fuzzLoopGrammar(run_t* run) {
+    run->timeStartedMillis = 0;
+    run->crashFileName[0] = '\0';
+    run->pc = 0;
+    run->backtrace = 0;
+    run->access = 0;
+    run->exception = 0;
+    run->report[0] = '\0';
+    run->mainWorker = true;
+    run->mutationsPerRun = run->global->mutate.mutationsPerRun;
+    run->dynamicFileSz = 0;
+    run->dynamicFileCopyFd = -1;
+    run->tmOutSignaled = false;
+
+    run->linux.hwCnts.cpuInstrCnt = 0;
+    run->linux.hwCnts.cpuBranchCnt = 0;
+    run->linux.hwCnts.bbCnt = 0;
+    run->linux.hwCnts.newBBCnt = 0;
+
+    if (!fuzz_fetchInput(run)) {
+        LOG_F("Cound't prepare input for fuzzing");
+    }
+    if (!subproc_Run(run)) {
+        LOG_F("Couldn't run fuzzed command");
+    }
+
+    if (run->global->feedback.dynFileMethod != _HF_DYNFILE_NONE) {
+        fuzz_perfFeedback(run);
+    }
+    if (run->global->cfg.useVerifier && !fuzz_runVerifier(run)) {
+        return;
+    }
+    report_Report(run);
+}
+
+
 static void* fuzz_threadNew(void* arg) {
     honggfuzz_t* hfuzz = (honggfuzz_t*)arg;
     unsigned int fuzzNo = ATOMIC_POST_INC(hfuzz->threads.threadsActiveCnt);
@@ -476,7 +530,7 @@ static void* fuzz_threadNew(void* arg) {
     };
 
     /* Do not try to handle input files with socketfuzzer */
-    if (!hfuzz->socketFuzzer.enabled) {
+    if (!hfuzz->socketFuzzer.enabled || !hfuzz->grammarFuzzer.enabled) {
         if (!(run.dynamicFile = files_mapSharedMem(hfuzz->mutate.maxFileSz, &run.dynamicFileFd,
                   "hfuzz-input", run.global->io.workDir))) {
             LOG_F("Couldn't create an input file of size: %zu", hfuzz->mutate.maxFileSz);
@@ -495,7 +549,7 @@ static void* fuzz_threadNew(void* arg) {
     for (;;) {
         /* Check if dry run mode with verifier enabled */
         if (run.global->mutate.mutationsPerRun == 0U && run.global->cfg.useVerifier &&
-            !hfuzz->socketFuzzer.enabled) {
+            (!hfuzz->socketFuzzer.enabled || !hfuzz->grammarFuzzer.enabled)) {
             if (ATOMIC_POST_INC(run.global->cnts.mutationsCnt) >= run.global->io.fileCnt) {
                 break;
             }
@@ -510,7 +564,10 @@ static void* fuzz_threadNew(void* arg) {
         input_setSize(&run, run.global->mutate.maxFileSz);
         if (hfuzz->socketFuzzer.enabled) {
             fuzz_fuzzLoopSocket(&run);
-        } else {
+        } else if (hfuzz->grammarFuzzer.enabled) { 
+            fuzz_fuzzLoopGrammar(&run); 
+        }
+        else {
             fuzz_fuzzLoop(&run);
         }
 
@@ -543,7 +600,7 @@ void fuzz_threadsStart(honggfuzz_t* hfuzz) {
         LOG_F("Couldn't prepare sanitizer options");
     }
 
-    if (hfuzz->socketFuzzer.enabled) {
+    if (hfuzz->socketFuzzer.enabled || hfuzz->grammarFuzzer.enabled) {
         /* Don't do dry run with socketFuzzer */
         LOG_I("Entering phase - Feedback Driven Mode (SocketFuzzer)");
         hfuzz->feedback.state = _HF_STATE_DYNAMIC_MAIN;
