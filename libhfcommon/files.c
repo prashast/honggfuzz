@@ -136,6 +136,7 @@ ssize_t files_readFromFd(int fd, uint8_t* buf, size_t fileSz) {
         }
         readSz += sz;
     }
+    LOG_D("Size read:%zu", readSz);
     return (ssize_t)readSz;
 }
 
@@ -180,6 +181,7 @@ bool files_sendToSocketNB(int fd, const uint8_t* buf, size_t fileSz) {
 
 bool files_sendToSocket(int fd, const uint8_t* buf, size_t fileSz) {
     int sendFlags = 0;
+    LOG_D("Send socket:%d", fd);
 #ifdef _HF_ARCH_DARWIN
     sendFlags |= SO_NOSIGPIPE;
 #else
@@ -189,6 +191,7 @@ bool files_sendToSocket(int fd, const uint8_t* buf, size_t fileSz) {
     size_t writtenSz = 0;
     while (writtenSz < fileSz) {
         ssize_t sz = send(fd, &buf[writtenSz], fileSz - writtenSz, sendFlags);
+        LOG_D ("Size sent:%zu", sz);
         if (sz < 0 && errno == EINTR) continue;
 
         if (sz < 0) return false;

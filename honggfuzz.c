@@ -252,13 +252,17 @@ int main(int argc, char** argv) {
         display_init();
     }
 
-    if (hfuzz.socketFuzzer.enabled || hfuzz.grammarFuzzer.enabled) {
+    if (hfuzz.socketFuzzer.enabled) {
         LOG_I("No input file corpus loaded, the external socket_fuzzer is responsible for "
               "creating the fuzz data");
         setupSocketFuzzer(&hfuzz);
     } else if (!input_init(&hfuzz)) {
         LOG_F("Couldn't load input corpus");
         exit(EXIT_FAILURE);
+    }
+    if (hfuzz.grammarFuzzer.enabled) {
+        LOG_I("Grammar Fuzzing mode, setting up socket..");
+        setupGrammarFuzzer(&hfuzz);    
     }
 
     if (hfuzz.mutate.dictionaryFile && (input_parseDictionary(&hfuzz) == false)) {

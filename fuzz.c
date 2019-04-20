@@ -336,14 +336,14 @@ static bool fuzz_fetchInput(run_t* run) {
     }
 
     if (fuzz_getState(run->global) == _HF_STATE_DYNAMIC_MAIN) {
-        // Checking if grammar fuzzer mode enabled
-        if (run->global->grammarFuzzer.enabled) {
-                
-        }
-
         if (run->global->exe.externalCommand) {
             if (!input_prepareExternalFile(run)) {
                 LOG_E("input_prepareFileExternally() failed");
+                return false;
+            }
+        } else if (run->global->grammarFuzzer.enabled) {
+            if (!fuzz_GetExternalInput(run)) {
+                LOG_E("fuzz_GetExternalInput failed");
                 return false;
             }
         } else if (run->global->exe.feedbackMutateCommand) {
@@ -355,7 +355,7 @@ static bool fuzz_fetchInput(run_t* run) {
             LOG_E("input_prepareFileDynamically() failed");
             return false;
         }
-    }
+   }
 
     if (fuzz_getState(run->global) == _HF_STATE_STATIC) {
         if (run->global->exe.externalCommand) {
