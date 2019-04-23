@@ -88,7 +88,8 @@ int fuzz_waitforGrammarFuzzer(run_t* run) {
     return 0;
 }
 
-bool fuzz_notifyGrammarFuzzerCov(honggfuzz_t* hfuzz, char *mode) {
+bool fuzz_notifyGrammarFuzzerCov(honggfuzz_t* hfuzz, uint64_t softCntPc, uint64_t softCntEdge,
+                uint64_t softCntCmp, char *mode) {
     cov_stats *cov_buf = (cov_stats *)malloc(sizeof(cov_stats));
     strncpy(cov_buf->buf, mode, 4);
 
@@ -99,9 +100,9 @@ bool fuzz_notifyGrammarFuzzerCov(honggfuzz_t* hfuzz, char *mode) {
         LOG_D("fuzz_notifyGrammarFuzzer: SEND: Old!");
     }
     
-    cov_buf->stats[0] = hfuzz->linux.hwCnts.softCntPc;
-    cov_buf->stats[1] = hfuzz->linux.hwCnts.softCntEdge;
-    cov_buf->stats[2] = hfuzz->linux.hwCnts.softCntCmp;
+    cov_buf->stats[0] = softCntPc;
+    cov_buf->stats[1] = softCntEdge;
+    cov_buf->stats[2] = softCntCmp;
     // Tell the fuzzer that the thing he sent reached new BB's
     LOG_D("Struct size:%zu Socket%d", sizeof(cov_stats), hfuzz->grammarFuzzer.clientSocket)
     bool ret = files_sendToSocket(hfuzz->grammarFuzzer.clientSocket, (uint8_t*)cov_buf, sizeof(cov_stats));

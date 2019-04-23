@@ -240,14 +240,14 @@ static void fuzz_perfFeedback(run_t* run) {
         }
         if (run->global->grammarFuzzer.enabled) {
             LOG_D("GrammarFuzzer: fuzz: new BB (perf)");
-            fuzz_notifyGrammarFuzzerCov(run->global, "New!");
+            fuzz_notifyGrammarFuzzerCov(run->global, softCntPc, softCntEdge, softCntCmp, "New!");
         }
     }
 
     else {
         if (run->global->grammarFuzzer.enabled) {
             LOG_D("GrammarFuzzer: fuzz: Old BB (perf)");
-            fuzz_notifyGrammarFuzzerCov(run->global, "Old!");
+            fuzz_notifyGrammarFuzzerCov(run->global, softCntPc, softCntEdge, softCntCmp, "Old!");
         }
     }
 

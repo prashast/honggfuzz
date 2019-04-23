@@ -5,7 +5,7 @@ bool fuzz_GetExternalInput(run_t* run);
 bool fuzz_prepareGrammarFuzzer(run_t* run);
 int fuzz_waitforGrammarFuzzer(run_t* run);
 
-bool fuzz_notifyGrammarFuzzerCov(honggfuzz_t* hfuzz, char *);
+bool fuzz_notifyGrammarFuzzerCov(honggfuzz_t* , uint64_t, uint64_t, uint64_t, char *);
 bool fuzz_notifyGrammarFuzzerCrash(run_t* run);
 
 bool setupGrammarFuzzer(honggfuzz_t* hfuzz);
