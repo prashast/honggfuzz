@@ -124,6 +124,32 @@ bool files_writeStrToFd(int fd, const char* str) {
     return files_writeToFd(fd, (const uint8_t*)str, strlen(str));
 }
 
+ssize_t files_readFromSocket(int fd, uint8_t* buf) {
+    int readSz = 0;
+    unsigned int payloadlen = 0;
+    uint32_t bufsz[1];
+    // Get the first 4 bytes which show the size of the message being received
+    ssize_t sz = recv(fd, (void *)&bufsz, 4, 0);
+    if (sz == 4) {
+        payloadlen = ntohl(*bufsz);
+        LOG_D("Encoded size:%d", payloadlen);
+    }
+
+    while(readSz < (int) payloadlen) {
+        ssize_t sz = TEMP_FAILURE_RETRY(read(fd, &buf[readSz], payloadlen - readSz));
+        if (sz == 0) {
+            break;
+        }
+        if (sz < 0) {
+            return -1;
+        }
+        readSz += sz;
+    }
+    LOG_D("Size read:%d", readSz);
+
+    return (ssize_t)readSz;
+}
+
 ssize_t files_readFromFd(int fd, uint8_t* buf, size_t fileSz) {
     size_t readSz = 0;
     while (readSz < fileSz) {

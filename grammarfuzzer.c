@@ -70,8 +70,7 @@ int fuzz_waitforGrammarFuzzer(run_t* run) {
 
     // Retrieve the input from the external input generator and put in buf 
     bzero(buf, run->global->mutate.maxFileSz);
-    ret = files_readFromFd(run->global->grammarFuzzer.clientSocket, buf, 
-                    run->global->mutate.maxFileSz);
+    ret = files_readFromSocket(run->global->grammarFuzzer.clientSocket, buf);
     inp_size = strlen((const char *)buf);
     // Set the size of the input to be sent
     input_setSize(run, inp_size);
