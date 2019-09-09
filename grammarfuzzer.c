@@ -113,13 +113,16 @@ bool fuzz_notifyGrammarFuzzerCov(honggfuzz_t* hfuzz, uint64_t softCntPc, uint64_
 }
 
 bool fuzz_notifyGrammarFuzzerCrash(run_t* run) {
-    bool ret = files_sendToSocket(run->global->grammarFuzzer.clientSocket, (uint8_t*)"Cras", 4);
-    LOG_D("fuzz_notifySocketFuzzer: SEND: Crash");
-    if (!ret) {
-        LOG_F("fuzz_notifyGrammarFuzzer");
-    }
+    // Notify fuzzer that he should send teh things
+    LOG_D("fuzz_notifyGrammarFuzzerCrash: SEND Cras");
+    cov_stats *cov_buf = (cov_stats *)malloc(sizeof(cov_stats));
+    strncpy(cov_buf->buf, "Cras", 4);
 
-    return true;
+    cov_buf->stats[0] = 0L ;
+    cov_buf->stats[1] = 0L;
+    cov_buf->stats[2] = 0L;
+    return files_sendToSocket(
+        run->global->grammarFuzzer.clientSocket, (uint8_t *)cov_buf, sizeof(cov_stats));
 }
 
 bool setupGrammarFuzzer(honggfuzz_t* run) {

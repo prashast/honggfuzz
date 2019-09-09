@@ -56,6 +56,7 @@
 #include "linux/unwind.h"
 #include "sanitizers.h"
 #include "socketfuzzer.h"
+#include "grammarfuzzer.h"
 #include "subproc.h"
 
 #if defined(__ANDROID__)
@@ -833,6 +834,10 @@ static void arch_traceSaveData(run_t* run, pid_t pid) {
     if (run->global->socketFuzzer.enabled) {
         LOG_D("SocketFuzzer: trace: New Uniqu Crash");
         fuzz_notifySocketFuzzerCrash(run);
+    }
+    if (run->global->grammarFuzzer.enabled) {
+        LOG_D("GrammarFuzzer: trace: New Uniqu Crash");
+        fuzz_notifyGrammarFuzzerCrash(run);
     }
     LOG_I("Crash: saved as '%s'", run->crashFileName);
 
